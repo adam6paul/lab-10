@@ -1,7 +1,7 @@
 ---
 title: "Lab 10 - Grading the professor, Pt. 2"
-author: "Insert your name here"
-date: "Insert date here"
+author: Adam Paul
+date: 5-6-2022
 output: github_document
 ---
 
@@ -13,15 +13,212 @@ library(tidymodels)
 library(openintro)
 ```
 
+```{r putting the data in the environment}
+evals <- evals
+```
+
 ### Exercise 1
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+>Fit a linear model (one you have fit before): m_bty, predicting average professor evaluation score based on average beauty rating (bty_avg) only. Write the linear model, and note the R2 and the adjusted R2.
+
+```{r beauty model}
+m_bty <- lm(score ~ bty_avg, data=evals)
+
+print(m_bty)
+
+summary(m_bty)
+
+```
+
+score = 3.88 + (x*.0666)
+
+r-squared= .035
+
+adjusted r-squared= .033
+
 
 ### Exercise 2
 
-...
+>Fit a linear model (one you have fit before): m_bty_gen, predicting average professor evaluation score based on average beauty rating (bty_avg) and gender. Write the linear model, and note the R2 and the adjusted R2.
 
-Add exercise headings as needed.
+
+
+```{r beauty and gender model}
+m_bty_gen <- lm(score ~ bty_avg + gender, data=evals)
+
+print(m_bty_gen)
+
+summary(m_bty_gen)
+
+```
+
+score = 3.74 + (bty* .074) + (gen*.1724)
+
+R squared = .059
+
+Adjusted R squared = .055
+
+
+### Exercise 3
+
+>Interpret the slope and intercept of m_bty_gen in context of the data.
+
+The intercept is the average score for female professors with a beauty score of 0, who obviously don't exist (what is a score of 0?)
+
+The first slope (.074) is how much a rating will increase with a 1 point increase in attractiveness.
+
+The second slope (.1724) is how much a rating will increase by being a male (rather than female) professor.
+
+
+### Exercise 4
+
+>What percent of the variability in score is explained by the model m_bty_gen.
+
+5.5% of the variance has been explained (adjust r-square= .055)
+
+### Exercise 5
+
+>What is the equation of the line corresponding to just male professors?
+
+male= 3.74 + (x * .074) + (1 * .1724)
+
+### Exercise 6
+
+>For two professors who received the same beauty rating, which gender tends to have the higher course evaluation score?
+
+Men tend to have the higher course evaluation score.
+
+### Exercise 7
+
+>How does the relationship between beauty and evaluation score vary between male and female professors?
+
+I believe that beauty is more important for one gender than the other, but based on the analyses I can't say which. But the increase is larger when gender is included, so it must be. Based on the way the world works, it's probably women for whom it is more impactful.
+
+### Exercise 8
+
+>How do the adjusted R2 values of m_bty_gen and m_bty compare? What does this tell us about how useful gender is in explaining the variability in evaluation scores when we already have information on the beauty score of the professor.
+
+Gender adds nearly .02 to the predictive power of the model, so it's at least as important of a predictor as beauty score.
+
+### Exercise 9
+
+>Compare the slopes of bty_avg under the two models (m_bty and m_bty_gen). Has the addition of gender to the model changed the parameter estimate (slope) for bty_avg?
+
+Yes, the slope got larger for bty_avg when we included gender.
+
+bty=.0666
+
+bty_gen=.074
+
+### Exercise 10
+
+>Create a new model called m_bty_rank with gender removed and rank added in. Write the equation of the linear model and interpret the slopes and intercept in context of the data.
+
+
+```{r beauty and rank model}
+m_bty_rank <- lm(score ~ bty_avg + rank, data=evals)
+
+print(m_bty_rank)
+
+summary(m_bty_rank)
+
+```
+
+Teaching:
+
+score= 3.98 + (0) + (0)
+
+Tenure track:
+
+score = 3.98 + (1*-.1607)
+
+Tenured:
+
+score = 3.98 + (1*-.1262)
+
+The intercept (3.98) is the score for teaching track professors, as they are the reference class.
+
+The first slope (-.1607) is how much a rating will decrease on average by being a tenure track professor
+
+The second slope (-.1262) is how much a rating will decrease on average by being a tenured professor.
+
+
+### Exercise 11
+
+> Which variable, on its own, would you expect to be the worst predictor of evaluation scores? Why? Hint: Think about which variable would you expect to not have any association with the professor’s score.
+
+I think pic color, because I really, really doubt students care about that.
+
+
+### Exercise 12
+
+>Check your suspicions from the previous exercise. Include the model output for that variable in your response.
+
+
+```{r}
+m_pic_color <- lm(score ~ pic_color, data=evals)
+
+print(m_pic_color)
+
+summary(m_pic_color)
+
+```
+
+Surprisingly, picture color was a significantly negative predictor! Professors with black and white photos get lower ratings.
+
+score= 4.36 + (1*-.2247)
+
+### Exercise 13
+
+>Suppose you wanted to fit a full model with the variables listed above. If you are already going to include cls_perc_eval and cls_students, which variable should you not include as an additional predictor? Why?
+
+cls_did_eval would be redundant with cls_perc_eval, and less useful than the percentage because the class sizes are different.
+
+
+### Exercise 14
+
+>Fit a full model with all predictors listed above (except for the one you decided to exclude) in the previous question.
+
+```{r}
+m_full_model <- lm(score ~ bty_avg + rank + ethnicity + gender + age + language +
+            cls_perc_eval + cls_students + cls_level + cls_profs + cls_credits, data=evals)
+
+print(m_full_model)
+
+summary(m_full_model)
+
+```
+
+### Exercise 15
+
+>Using backward-selection with adjusted R-squared as the selection criterion, determine the best model. You do not need to show all steps in your answer, just the output for the final model. Also, write out the linear model for predicting score based on the final model you settle on.
+
+```{r}
+m_full_model <- lm(score ~  bty_avg + ethnicity + gender  + age + cls_perc_eval + cls_level + cls_credits, data=evals)
+print(m_full_model)
+summary(m_full_model)
+```
+
+This reduced model accounts for the data the best.
+
+score= 3.41 + (bty_avg * .0646) + (ethnicitity * .2423) + (gender * .1811) + (age * -0.0050) (cls_perc_eval * .0051) + (cls_level * -.0151) + (cls_credit * .5225)
+
+### Exercise 16
+
+>Interpret the slopes of one numerical and one categorical predictor based on your final model.
+
+cls_level (-.0151) tells us that the higher level the course is, the lower the eval is likely to be.
+
+age (=.0050) tells us that the older a professor is, the lower their eval is likely to be.
+
+### Exercise 17
+
+>Based on your final model, describe the characteristics of a professor and course at University of Texas at Austin that would be associated with a high evaluation score.
+
+An attractive, young, white male professor teaching a multiple credit freshman course.
+
+### Exercise 18
+
+>Would you be comfortable generalizing your conclusions to apply to professors generally (at any university)? Why or why not?
+
+Not remotely, as this is only a single university and we don't know how it might change on a different campus, in a different city, in a different state, in a different country. This could be entirely idiosyncratic to UT Austin.
